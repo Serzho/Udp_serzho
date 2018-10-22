@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import socket
+import pickle as pl
 
 IP = '127.0.0.1' #айпи сервера
 PORT = 8000 #порт сервера
@@ -9,7 +10,7 @@ TIMEOUT = 60 #время ожидания ответа сервера [сек]
 
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp сервер
 server.bind((IP, PORT)) #запускаем udp сервер
-print("Listening on port %d..." % PORT) #выводим сообщение о запуске сервера
+print("Listening %s on port %d..." % (IP, PORT)) #выводим сообщение о запуске сервера
 server.settimeout(TIMEOUT) #указываем серверу время ожидания
 
 while True: #создаем бесконечный цикл    
@@ -18,10 +19,17 @@ while True: #создаем бесконечный цикл
     except socket.timeout:
         print("Time is out...")
         break
-    msg = data[0] #разбиваем ответ на сообщение
+    cmd, param = pl.loads(data[0]) #разбиваем ответ на сообщение
     adrs = data[1] #и адресс с портом откуда пришло сообщение
-    print("Message: %s" % msg.decode('utf-8') + adrs)
 
-    msg = 'Ok'
-    server.sendto(msg.encode('utf-8'), adrs)
+    print(cmd, param, adrs)
+
+
+    if(cmd == 'speed'):
+        leftSpeed, rightSpeed = param
+        print('leftSpeed: %d, rightSpeed: %d' % (leftSpeed, rightSpeed))
+    else:
+        print('Unknown command: %s' % cmd)
+    #msg = 'Ok'
+    #server.sendto(msg.encode('utf-8'), adrs)
 server.close()
