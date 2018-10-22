@@ -28,6 +28,8 @@ while True: #создаем бесконечный цикл
     if(cmd == 'speed'):
         leftSpeed, rightSpeed = param
         print('leftSpeed: %d, rightSpeed: %d' % (leftSpeed, rightSpeed))
+    elif(cmd == 'beep'):
+        print('Beep!!!')
     else:
         print('Unknown command: %s' % cmd)
     #msg = 'Ok'
