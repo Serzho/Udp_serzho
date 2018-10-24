@@ -4,7 +4,7 @@
 import socket
 
 #IP = '127.0.0.1' #айпи сервера
-IP = '192.168.8.177' #айпи севера
+IP = '192.168.8.173' #айпи севера
 PORT = 8000 #порт сервера
 
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
