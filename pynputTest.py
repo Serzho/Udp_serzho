@@ -37,13 +37,15 @@ def Listener():
 
 
 
-IP = '192.168.8.177' #айпи сервера
+IP = '192.168.8.173' #айпи сервера
 PORT = 8000 #порт сервера
 
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
 
 keyListenerThread = threading.Thread(target = Listener)
 keyListenerThread.start()
+
+stateMove = [0, 0]
 
 running = True
 
@@ -52,25 +54,10 @@ direction = ''
 while running:
     #print(keys)
     try:
-        if(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-            direction = ('LEFT')
-        elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-            direction = ('UP')
-        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
-            direction = ('RIGHT')
-        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
-            direction = ('DOWN')
-        elif(keys.count("'a'")!=0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-            direction = ('LEFTUP')
-        elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
-            direction = ('UPRIGHT')
-        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")!=0):
-            direction = ('RIGHTDOWN')
-        elif(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
-            direction = ('LEFTDOWN')
-        elif(not("'a'" in keys)and not("'w'" in keys)and not("'s'" in keys)and not("'d'" in keys)):
-            direction = 'None' 
-        print(direction)
+        stateMove = [-int("'a'" in keys) + int("'d'" in keys), \
+                     -int("'s'"in keys) + int("'w'" in keys)]
+        print(stateMove)
+        SendMessage(str(stateMove[0]) + ' , ' + str(stateMove[1]))
         time.sleep(0.1)
     except KeyboardInterrupt:
         print('Ctrl + c pressed!!!')
