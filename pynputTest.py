@@ -37,7 +37,7 @@ def Listener():
 
 
 
-IP = '192.168.8.173' #айпи сервера
+IP = '192.168.8.177' #айпи сервера
 PORT = 8000 #порт сервера
 
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
@@ -57,7 +57,7 @@ while running:
         stateMove = [-int("'a'" in keys) + int("'d'" in keys), \
                      -int("'s'"in keys) + int("'w'" in keys)]
         print(stateMove)
-        SendMessage(str(stateMove[0]) + ' , ' + str(stateMove[1]))
+        SendMessage(stateMove)
         time.sleep(0.1)
     except KeyboardInterrupt:
         print('Ctrl + c pressed!!!')
