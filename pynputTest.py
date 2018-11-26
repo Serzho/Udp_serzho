@@ -51,23 +51,29 @@ direction = ''
 
 while running:
     #print(keys)
-    if(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-        direction = ('LEFT')
-    elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-        direction = ('UP')
-    elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
-        direction = ('RIGHT')
-    elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
-        direction = ('DOWN')
-    elif(keys.count("'a'")!=0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
-        direction = ('LEFTUP')
-    elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
-        direction = ('UPRIGHT')
-    elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")!=0):
-        direction = ('RIGHTDOWN')
-    elif(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
-        direction = ('LEFTDOWN')
-    elif(not("'a'" in keys)and not("'w'" in keys)and not("'s'" in keys)and not("'d'" in keys)):
-        direction = 'None'
-    print(direction)
-    time.sleep(0.1)
+    try:
+        if(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
+            direction = ('LEFT')
+        elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
+            direction = ('UP')
+        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
+            direction = ('RIGHT')
+        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
+            direction = ('DOWN')
+        elif(keys.count("'a'")!=0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")==0):
+            direction = ('LEFTUP')
+        elif(keys.count("'a'")==0)and(keys.count("'w'")!=0)and(keys.count("'s'")==0)and(keys.count("'d'")!=0):
+            direction = ('UPRIGHT')
+        elif(keys.count("'a'")==0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")!=0):
+            direction = ('RIGHTDOWN')
+        elif(keys.count("'a'")!=0)and(keys.count("'w'")==0)and(keys.count("'s'")!=0)and(keys.count("'d'")==0):
+            direction = ('LEFTDOWN')
+        elif(not("'a'" in keys)and not("'w'" in keys)and not("'s'" in keys)and not("'d'" in keys)):
+            direction = 'None' 
+        print(direction)
+        time.sleep(0.1)
+    except KeyboardInterrupt:
+        print('Ctrl + c pressed!!!')
+        break
+
+
