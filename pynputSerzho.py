@@ -40,7 +40,7 @@ def Listener():
 
 IP = '192.168.8.163' #айпи сервера
 PORT = 8000 #порт сервера
-
+BASE_SPEED = 500
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
 
 keyListenerThread = threading.Thread(target = Listener)
@@ -54,11 +54,11 @@ direction = ''
 while running:
     #print(keys)
     try:
-        stateMove = [-int("'d'" in keys) + int("'a'" in keys), \
-                     -int("'s'"in keys) + int("'w'" in keys)]
+        stateMove = [-int("'w'" in keys) + int("'s'" in keys), \
+                     -int("'d'"in keys) + int("'a'" in keys)]
         print(stateMove)
 
-        stateMoveBytes = pl.dumps(stateMove, protocol = 3)
+        stateMoveBytes = pl.dumps((BASE_SPEED, stateMove), protocol = 3)
 
         crc = crc16.crc16xmodem(stateMoveBytes)
         crcBytes = crc.to_bytes(2, byteorder='big', signed = False)

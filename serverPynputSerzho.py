@@ -30,6 +30,7 @@ server.settimeout(TIMEOUT) #указываем серверу время ожи�
 stateMove = [0, 0]
 leftSpeed = 0
 rightSpeed = 0
+USER_IP = ''
 
 while True: #создаем бесконечный цикл    
     try:
@@ -40,20 +41,25 @@ while True: #создаем бесконечный цикл
 
     #print("Message: %s" % msg.decode'utf-8' + str(adrs))
     data = packet[0]
+    if(USER_IP == ''):
+        USER_IP = packet[1][0]
+    else:
+        if(USER_IP == packet[1][0]):
+            crcBytes = data[-2:]
+            crc = int.from_bytes(crcBytes, byteorder="big", signed = False)
 
-    crcBytes = data[-2:]
-    crc = int.from_bytes(crcBytes, byteorder="big", signed = False)
-
-    stateMoveBytes = data[:-2]
-    newCrc = crc16.crc16xmodem(stateMoveBytes)
-    #print(crc, newCrc)
-    if crc == newCrc:
-    #print(stateMove)
-        stateMove = pl.loads(stateMoveBytes)
-        leftSpeed = stateMove[1] * 450 + stateMove[0] * 300
-        rightSpeed = -stateMove[1] * 450 + stateMove[0] * 300
-        SetSpeed(leftSpeed,rightSpeed)
-        #print(leftSpeed, rightSpeed)
+            stateMoveBytes = data[:-2]
+            newCrc = crc16.crc16xmodem(stateMoveBytes)
+            #print(crc, newCrc)
+            if crc == newCrc:
+            #print(stateMove)
+                BASE_SPEED, stateMove = pl.loads(stateMoveBytes)
+                leftSpeed = int(stateMove[0] * BASE_SPEED + stateMove[1] * BASE_SPEED // 2)
+                rightSpeed = int(-stateMove[0] * BASE_SPEED + stateMove[1] * BASE_SPEED // 2)
+                SetSpeed(leftSpeed,rightSpeed)
+                #print(leftSpeed, rightSpeed)
+        else:
+            print('Invalid IP %s' % packet[1][0])
     
 server.close()
 SetSpeed(0, 0)
