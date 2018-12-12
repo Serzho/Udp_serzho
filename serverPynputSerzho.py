@@ -9,11 +9,22 @@ sys.path.append('EduBot/EduBotLibrary')
 import edubot
 import crc16
 
+SERVO_MIN_POS = 42
+SERVO_MID_POS = 62
+SERVO_MAX_POS = 82
+
 def SetSpeed(leftSpeed, rightSpeed):
     robot.leftMotor.SetSpeed(leftSpeed)
     robot.rightMotor.SetSpeed(rightSpeed)
 
-IP = '192.168.8.163' #айпи сервера
+def SetCameraServoPos(position):
+    if position > SERVO_MAX_POS:
+        position = SERVO_MAX_POS
+    elif position > SERVO_MIN_POS:
+        position = SERVO_MIN_POS
+    robot.servo[0].SetPosition(position)
+    
+IP = '192.168.8.173' #айпи сервера
 PORT = 8000 #порт сервера
 TIMEOUT = 60 #время ожидания ответа сервера [сек]
 
@@ -31,6 +42,8 @@ stateMove = [0, 0]
 leftSpeed = 0
 rightSpeed = 0
 USER_IP = ''
+
+
 
 while True: #создаем бесконечный цикл    
     try:
@@ -53,11 +66,12 @@ while True: #создаем бесконечный цикл
             #print(crc, newCrc)
             if crc == newCrc:
             #print(stateMove)
-                BASE_SPEED, stateMove = pl.loads(stateMoveBytes)
+                BASE_SPEED, stateMove, servoPos, automat = pl.loads(stateMoveBytes)
                 leftSpeed = int(stateMove[0] * BASE_SPEED + stateMove[1] * BASE_SPEED // 2)
                 rightSpeed = int(-stateMove[0] * BASE_SPEED + stateMove[1] * BASE_SPEED // 2)
                 SetSpeed(leftSpeed,rightSpeed)
                 #print(leftSpeed, rightSpeed)
+                SetCameraServoPos(servoPos)
         else:
             print('Invalid IP %s' % packet[1][0])
     

@@ -11,6 +11,8 @@ import crc16
 import threading
 
 keys = []
+servoPos = 62
+
 
 def SendMessage(msg):
     client.sendto(msg, (IP, PORT))
@@ -38,9 +40,10 @@ def Listener():
 
 
 
-IP = '192.168.8.163' #айпи сервера
+IP = '192.168.8.173' #айпи сервера
 PORT = 8000 #порт сервера
-BASE_SPEED = 500
+BASE_SPEED = 200
+SERVO_STEP = 3
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
 
 keyListenerThread = threading.Thread(target = Listener)
@@ -48,7 +51,7 @@ keyListenerThread.start()
 
 stateMove = [0, 0]
 running = True
-
+automat = False
 direction = ''
 
 while running:
@@ -56,9 +59,15 @@ while running:
     try:
         stateMove = [-int("'w'" in keys) + int("'s'" in keys), \
                      -int("'d'"in keys) + int("'a'" in keys)]
-        print(stateMove)
-
-        stateMoveBytes = pl.dumps((BASE_SPEED, stateMove), protocol = 3)
+        if 'Key.page_down' in keys:
+            if servoPos < 125:
+                servoPos += SERVO_STEP
+        if 'Key.page_up' in keys:
+            if servoPos > 0:
+                servoPos -= SERVO_STEP   
+        #print(stateMove)
+        #print(keys)
+        stateMoveBytes = pl.dumps((BASE_SPEED, stateMove, servoPos, automat), protocol = 3)
 
         crc = crc16.crc16xmodem(stateMoveBytes)
         crcBytes = crc.to_bytes(2, byteorder='big', signed = False)
