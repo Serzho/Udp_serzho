@@ -7,7 +7,7 @@ import socket
 import pickle as pl
 import time
 
-def SendMessage(msg, param = 0):
+def SendMessage(msg):
     client.sendto(str(msg).encode('utf-8'), (IP, PORT))
     
 def OnPress(key):
