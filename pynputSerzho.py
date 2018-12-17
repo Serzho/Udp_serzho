@@ -53,6 +53,9 @@ stateMove = [0, 0]
 running = True
 automat = False
 direction = ''
+text = 'Serezha'
+beep = False
+
 
 while running:
     #print(keys)
@@ -64,11 +67,14 @@ while running:
                 servoPos += SERVO_STEP
         if 'Key.page_up' in keys:
             if servoPos > 0:
-                servoPos -= SERVO_STEP   
+                servoPos -= SERVO_STEP
+        if 'Key.space' in keys:
+            beep = True
         #print(stateMove)
         #print(keys)
-        stateMoveBytes = pl.dumps((BASE_SPEED, stateMove, servoPos, automat), protocol = 3)
-
+        packet = text, BASE_SPEED, stateMove, servoPos, beep, automat
+        stateMoveBytes = pl.dumps(packet, protocol = 3)
+        beep = False
         crc = crc16.crc16xmodem(stateMoveBytes)
         crcBytes = crc.to_bytes(2, byteorder='big', signed = False)
 
