@@ -42,7 +42,7 @@ def TextDisplay(text):
 def Beep(beep):
     if beep:
         robot.Beep()
-IP = '192.168.8.173' #айпи сервера
+IP = '192.168.8.163' #айпи сервера
 PORT = 8000 #порт сервера
 TIMEOUT = 60 #время ожидания ответа сервера [сек]
 
@@ -74,7 +74,7 @@ disp.clear()
 
 # Load default font.
 #font = ImageFont.load_default()
-fontFile = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+fontFile = 'DejaVuSans.ttf'
 font = ImageFont.truetype(fontFile, 15)
 
 stateMove = [0, 0]

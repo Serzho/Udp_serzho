@@ -40,9 +40,9 @@ def Listener():
 
 
 
-IP = '192.168.8.173' #айпи сервера
+IP = '192.168.8.163' #айпи сервера
 PORT = 8000 #порт сервера
-BASE_SPEED = 200
+BASE_SPEED = 400
 SERVO_STEP = 3
 client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #создаем udp клиент
 
@@ -71,7 +71,7 @@ while running:
         if 'Key.space' in keys:
             beep = True
         #print(stateMove)
-        #print(keys)
+        print(keys)
         packet = text, BASE_SPEED, stateMove, servoPos, beep, automat
         stateMoveBytes = pl.dumps(packet, protocol = 3)
         beep = False
