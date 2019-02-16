@@ -91,6 +91,8 @@ except pygame.error:
 while running:
     for event in pygame.event.get(): #пробегаемся в цикле по всем событиям Pygame
         #print(event)
+        if 'beep' in command:
+            command.remove('beep')
         if event.type == pygame.QUIT: #проверка на выход из окна
             running = False
         elif event.type == pygame.KEYDOWN:
@@ -123,21 +125,66 @@ while running:
                 keys.remove("sd")
             
         elif event.type == pygame.JOYAXISMOTION: #перемещение стиков
-            #print(event)
-            if event.axis == 1:
-                print('0', event.value)
+            if event.axis == 2:
                 if event.value > 0:
-                    client.SetSpeed(-100, -100)
-                elif event.value < 0:
-                    client.SetSpeed(100, 100)
+                    keys.add("sd")
                 else:
-                    client.StopMotor()
+                    try:
+                        keys.remove("sd")
+                    except:
+                        pass
+            elif event.axis == 5:
+                if event.value > 0:
+                    keys.add("su")
+                else:
+                    try:
+                        keys.remove("su")
+                    except:
+                        pass
+                    
             elif event.axis == 0:
-                print('1', event.value)
+                if event.value > 0.2:
+                    keys.add("r")
+                elif event.value < -0.2:
+                    keys.add("l")
+                elif abs(event.value) < 0.2:
+                    try:
+                        keys.remove("r")
+                    except:
+                        pass
+                    try:
+                        keys.remove("l")
+                    except:
+                        pass
+                    
+            elif event.axis == 1:
+                if event.value > 0.2:
+                    keys.add("d")
+                elif event.value < -0.2:
+                    keys.add("u")
+                elif abs(event.value) < 0.2:
+                    try:
+                        keys.remove("d")
+                    except:
+                        pass
+                    try:
+                        keys.remove("u")
+                    except:
+                        pass
+                
         elif event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 0:
-                client.Speak()
-
+            if event.button == 5:
+                SPEED += 10
+                print(SPEED)
+            elif event.button == 4:
+                SPEED -= 10
+                print(SPEED)
+            elif event.button == 7:
+                command.append("beep")
+            elif event.button == 8:
+                command.append("beep")
+                running = False
+            
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
         servo = int("su" in keys) - int("sd" in keys)

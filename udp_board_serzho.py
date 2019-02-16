@@ -17,6 +17,7 @@ import socket
 import os
 import pickle
 import sys
+import subprocess as sp
 
 import time
 import threading
@@ -58,7 +59,7 @@ class StateThread(threading.Thread):
 
             #Обновляем дисплей
             self._disp.display()
-            sleep(1)
+            time.sleep(1)
             
         print('State thread stopped')
 
@@ -100,6 +101,7 @@ def recv_data():
     global old_data
     global IP_RTP 
     global first_cicle
+    global transmit
     
     data = []
     try:
@@ -142,6 +144,7 @@ def print_data():
 
 def end():
     global running
+    
     running = False
     StopMotor()
     robot.Release()
@@ -173,19 +176,18 @@ server.settimeout(TIMEOUT) #указываем время ожидания се�
 
 print("Listening %s on port %d..." % (IP, PORT)) #вывод о запуске сервера
 
-if(sys.argv[1] == 1): #включаем дисплей, если нужно
-    ina = INA219(SHUNT_OHMS, MAX_EXPECTED_AMPS) #создаем обект для работы с INA219
-    ina.configure(ina.RANGE_16V)
+ina = INA219(SHUNT_OHMS, MAX_EXPECTED_AMPS) #создаем обект для работы с INA219
+ina.configure(ina.RANGE_16V)
     
-    disp = Adafruit_SSD1306.SSD1306_128_64(rst = None) #создаем обект для работы c OLED дисплеем 128х64
-    disp.begin() #инициализируем дисплей
+disp = Adafruit_SSD1306.SSD1306_128_64(rst = None) #создаем обект для работы c OLED дисплеем 128х64
+disp.begin() #инициализируем дисплей
     
-    disp.clear() #очищаем дисплей
-    disp.display() #обновляем дисплей
+disp.clear() #очищаем дисплей
+disp.display() #обновляем дисплей
     
-    #создаем и запускаем поток отображающий данные телеметрии да дисплее робота
-    stateThread = StateThread(robot, ina, disp)
-    stateThread.start()
+#создаем и запускаем поток отображающий данные телеметрии да дисплее робота
+stateThread = StateThread(robot, ina, disp)
+stateThread.start()
 
 running = True
 direction = [0, 0]
