@@ -8,7 +8,7 @@ import edubot #подлючение модулей
 from time import sleep
 from xmlrpc.server import SimpleXMLRPCServer
 import threading
-import subprocess
+import subprocess as sp
 
 #библиотеки для работы с i2c монитором питания INA219
 from ina219 import INA219
@@ -22,10 +22,14 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-IP = '192.168.1.103'
+
+#IP = '192.168.1.103'
+IP = sp.check_output('hostname -I', shell = True).decode('UTF-8')
 PORT = 8000
 
-IP_RTP = '192.168.1.104'
+print('SELF IP: %s \n PORT: %d' % IP, PORT)
+
+#IP_RTP = '192.168.1.104'
 
 SHUNT_OHMS = 0.01 #значение сопротивления шунта на плате EduBot
 MAX_EXPECTED_AMPS = 2.0
@@ -138,7 +142,7 @@ server.register_function(StopMotor)
 server.register_function(ServoUp)
 server.register_function(ServoDown)
 
-subprocess.Popen('/home/pi/EduBot/mjpeg.py %s' % IP_RTP, shell=True)
+sp.Popen('/home/pi/EduBot/mjpeg.py %s' % IP_RTP, shell=True)
 
 # запускаем сервер
 try:
