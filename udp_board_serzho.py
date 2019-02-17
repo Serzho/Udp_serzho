@@ -26,8 +26,17 @@ import crc16
 sys.path.append('EduBot/EduBotLibrary')
 import edubot
 
+import cv2
+import numpy as np
+import psutil
+
+sys.path.append('/home/pi/RPicam-Streamer/')
+
+import rpicam
+
 #поток для контроля напряжения и тока
 #и отображения на дисплее
+
 class StateThread(threading.Thread):
     def __init__(self, robot, ina219, disp):
         super(StateThread, self).__init__()
@@ -67,15 +76,58 @@ class StateThread(threading.Thread):
         self._stopped.set()
         self.join()
 
+class FrameHandlerThread(threading.Thread):
+    
+    def __init__(self, stream):
+        super(FrameHandlerThread, self).__init__()
+        self.daemon = True
+        self.rpiCamStream = stream
+        self._frame = None
+        self._frameCount = 0
+        self._stopped = threading.Event() #событие для остановки потока
+        self._newFrameEvent = threading.Event() #событие для контроля поступления кадров
+        
+    def run(self):
+        print('Frame handler started')
+        while not self._stopped.is_set():
+            self.rpiCamStream.frameRequest() #отправил запрос на новый кадр
+            self._newFrameEvent.wait() #ждем появления нового кадра
+            if not (self._frame is None): #если кадр есть
+                
+                #--------------------------------------
+                # тут у нас обрабока кадра self._frame средствами OpenCV
+                time.sleep(2) #имитируем обработку кадра
+                imgFleName = 'frame%d.jpg' % self._frameCount
+                #cv2.imwrite(imgFleName, self._frame) #сохраняем полученный кадр в файл
+                print('Write image file: %s' % imgFleName)
+                self._frameCount += 1
+                #--------------------------------------
+                
+            self._newFrameEvent.clear() #сбрасываем событие
+            
+        print('Frame handler stopped')
+
+    def stop(self): #остановка потока
+        self._stopped.set()
+        if not self._newFrameEvent.is_set(): #если кадр не обрабатывается
+            self._frame = None
+            self._newFrameEvent.set() 
+        self.join()
+
+    def setFrame(self, frame): #задание нового кадра для обработки
+        if not self._newFrameEvent.is_set(): #если обработчик готов принять новый кадр
+            self._frame = frame
+            self._newFrameEvent.set() #задали событие
+        return self._newFrameEvent.is_set()
+
+                
+def onFrameCallback(frame): #обработчик события 'получен кадр'
+    #print('New frame')
+    frameHandlerThread.setFrame(frame) #задали новый кадр
 
 def SetSpeed(leftSpeed, rightSpeed):
     robot.leftMotor.SetSpeed(leftSpeed)
     robot.rightMotor.SetSpeed(rightSpeed)
-    return 0
-
-def StopMotor():    
-    robot.leftMotor.SetSpeed(0)
-    robot.rightMotor.SetSpeed(0)
     return 0
 
 def ServoUp():
@@ -96,6 +148,32 @@ def ServoDown():
     print ('ServoPos = %d' % servoPos)
     return 0
 
+def transmit():
+    global frameHandlerThread
+    global IP_RTP
+    global RTP_PORT
+    print('Start transmit...')
+    #проверка наличия камеры в системе  
+    assert rpicam.checkCamera(), 'Raspberry Pi camera not found'
+    print('Raspberry Pi camera found')
+
+    print('OpenCV version: %s' % cv2.__version__)
+
+
+    FORMAT = rpicam.FORMAT_MJPEG #поток MJPEG
+    WIDTH, HEIGHT = 640, 360
+    RESOLUTION = (WIDTH, HEIGHT)
+    FRAMERATE = 30
+
+
+    rpiCamStreamer = rpicam.RPiCamStreamer(FORMAT, RESOLUTION, FRAMERATE, (IP_RTP, RTP_PORT), onFrameCallback)
+    rpiCamStreamer.start() #запускаем трансляцию
+
+    #поток обработки кадров    
+    frameHandlerThread = FrameHandlerThread(rpiCamStreamer)
+    frameHandlerThread.start() #запускаем обработку
+    
+
 def recv_data():
     global running
     global old_data
@@ -109,8 +187,7 @@ def recv_data():
         if first_cicle: #если первая иттерация, то записываем IP первого устройства, приславшего пакет с данными
             IP_RTP = data[1][0]
             first_cicle = False
-            os.popen('/home/pi/EduBot/mjpeg.py %s' % IP_RTP)
-            
+            transmit()
         if data != old_data and data[1][0] == IP_RTP : #если пакет данных "устарел", то игнорируем
             old_data = data
             return data
@@ -120,40 +197,31 @@ def recv_data():
         running = False
         print("Time is out...")
 
-def update_current():
-    """обновляем характеристики питании и записываем в список параметров"""
-    global all_data
-    all_data[1][3] = round(ina.voltage(), 2)
-    all_data[1][4] = round(ina.current() / 1000, 3)
-    
-def print_data():
-    """выводим на экран все важные данные из списка параметров"""
-    global running
-    global USER_IP
-    while running:
-        os.system('clear')#очищаем терминал
-        if USER_IP:
-            print("\nробот захвачен, IP - ", USER_IP)
-        for i in range(len(all_data[0])):
-            print(all_data[0][i], " : ", all_data[1][i]) #выводим все данные из all_data
-        print("сервы - ", servo)
-        time.sleep(0.1)
-    #выводим характеристики питания
-        
-    send_reply(all_data)#отправляем параметры на пульт
-
 def end():
+    global frameHandlerThread
     global running
-    
+    global transmit
     running = False
-    StopMotor()
+    SetSpeed(0,0)
     robot.Release()
     server.close()
+    try:
+        #останавливаем обработку кадров
+        frameHandlerThread.stop()
+
+        #останов трансляции c камеры
+        rpiCamStreamer.stop()    
+        rpiCamStreamer.close()
+    except(NameError):
+        pass
+        
+    print('End program')
     
 IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n','')) #получаем IP, удаляем \n
 PORT = 8000
 IP_RTP = ''
 #IP_RTP = '192.168.1.104'
+RTP_PORT = 5000 #порт отправки RTP видео
 
 print('SELF IP: %s \n PORT: %d' % (IP, PORT)) #вывод IP и PORT
 
@@ -184,33 +252,22 @@ disp.begin() #инициализируем дисплей
     
 disp.clear() #очищаем дисплей
 disp.display() #обновляем дисплей
-    
-#создаем и запускаем поток отображающий данные телеметрии да дисплее робота
-stateThread = StateThread(robot, ina, disp)
-stateThread.start()
+
+if sys.argv[1] == 1:  
+    #создаем и запускаем поток отображающий данные телеметрии да дисплее робота
+    stateThread = StateThread(robot, ina, disp)
+    stateThread.start()
 
 running = True
 direction = [0, 0]
 command = []
-servo = 0
 first_cicle = True
 old_data = []
 
 while running:  
-    try:
-        global direction
-        global command
-        global all_data
-        global first_cicle
-        global IP_RTP
-        global servo
-
-        leftSpeed = 0 #скорость левого двигателя
-        rightSpeed = 0 #скорость правого двигателя
+    try:      
         cmd = [] #список всех команд, отправляемых роботу
         data = recv_data()
-
-        #update_current()
     
         if data:
             cmd, crc = pickle.loads(data[0]) #распаковываем команду и значение контрольной суммы
@@ -218,6 +275,7 @@ while running:
             if crc == crc_new: #сравниваем контрольные суммы и проверяем целостность данных
                 cmd = pickle.loads(cmd) #распаковываем список команд
                 direction, speed, command, servo = cmd
+                #print(direction, speed, command, servo)
                 if servo == 1:
                     ServoUp()
                 elif servo == -1:
@@ -225,14 +283,14 @@ while running:
         
         SetSpeed(direction[0] * speed + (direction[1] * speed)//2, direction[0] * speed - (direction[1] * speed)//2)
     
-        if "beep" in command:
+        if "b" in command:
             robot.Beep()
-        if "end" in command:
+        if "e" in command:
             end()
         time.sleep(0.1)
         
-    except (KeyboardInterrupt, SystemExit):
-        print("KeyboardInterrupt")
+    except:
+        print("Stopped...")
         end()
 end()
 print("End program")

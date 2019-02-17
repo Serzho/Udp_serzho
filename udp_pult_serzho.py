@@ -24,7 +24,7 @@ def sendCommand(data):
     global PORT
     
     if not running:
-        data[2].append("end")
+        data[2].append("e")
     data = pickle.dumps(data)#запаковываем данные
     crc = get_crc(data)#вычисляем контрольную сумму пакета
     msg = pickle.dumps((data, crc))#прикрепляем вычисленную контрольную сумму к пакету данных
@@ -91,8 +91,8 @@ except pygame.error:
 while running:
     for event in pygame.event.get(): #пробегаемся в цикле по всем событиям Pygame
         #print(event)
-        if 'beep' in command:
-            command.remove('beep')
+        if 'b' in command:
+            command.remove('b')
         if event.type == pygame.QUIT: #проверка на выход из окна
             running = False
         elif event.type == pygame.KEYDOWN:
@@ -105,7 +105,7 @@ while running:
             elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                 keys.add("d")
             elif event.key == pygame.K_SPACE:
-                command.append("beep")
+                command.append("b")
             elif event.key == pygame.K_PAGEUP:
                 keys.add("su")
             elif event.key == pygame.K_PAGEDOWN:
@@ -180,9 +180,9 @@ while running:
                 SPEED -= 10
                 print(SPEED)
             elif event.button == 7:
-                command.append("beep")
+                command.append("b")
             elif event.button == 8:
-                command.append("beep")
+                command.append("b")
                 running = False
             
         direction[0] = int("d" in keys) - int("u" in keys)
