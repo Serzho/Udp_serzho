@@ -9,14 +9,17 @@ import os
 import socket
 import pickle
 
-sys.path.append('/home/serzho/RPicam-Streamer-master/')
-
+#sys.path.append('/home/serzho/RPicam-Streamer-master/')
+sys.path.append('/home/user6/RPicam-Streamer')
 import time
 import receiver
 import threading
 import crc16
 
-
+def onFrameCallback(data, width, height):
+    frame = pygame.image.frombuffer(data, (width, height), 'RGB')
+    screen.blit(frame, (0,0))
+    
 def sendCommand(data):
     global old_crc
     global running
@@ -53,7 +56,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.1.103'
+IP_ROBOT = '192.168.8.159'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -71,8 +74,10 @@ clock = pygame.time.Clock() #для осуществления задержки
 pygame.joystick.init() #инициализация библиотеки джойстика
 
 
-recv = receiver.StreamReceiver(receiver.FORMAT_MJPEG, (SELF_IP, RTP_PORT))
-screen = recv.play_pipeline()
+recv = receiver.StreamReceiver(receiver.VIDEO_MJPEG, onFrameCallback)
+recv.setHost(IP_ROBOT)
+recv.setPort(RTP_PORT)
+recv.play_pipeline()
 
 fraps = 24
 
@@ -190,7 +195,8 @@ while running:
         servo = int("su" in keys) - int("sd" in keys)
         
         sendCommand((direction, SPEED, command, servo))
-                
+
+    pygame.display.update()         
     clock.tick(fraps) #задержка обеспечивающая 30 кадров в секунду
 
 end()

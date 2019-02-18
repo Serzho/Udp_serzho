@@ -161,13 +161,16 @@ def transmit():
     print('OpenCV version: %s' % cv2.__version__)
 
 
-    FORMAT = rpicam.FORMAT_MJPEG #поток MJPEG
+    FORMAT = rpicam.VIDEO_MJPEG #поток MJPEG
     WIDTH, HEIGHT = 640, 360
     RESOLUTION = (WIDTH, HEIGHT)
     FRAMERATE = 30
 
 
-    rpiCamStreamer = rpicam.RPiCamStreamer(FORMAT, RESOLUTION, FRAMERATE, (IP_RTP, RTP_PORT), onFrameCallback)
+    rpiCamStreamer = rpicam.RPiCamStreamer(FORMAT, RESOLUTION, FRAMERATE)
+    rpiCamStreamer.setPort(RTP_PORT)
+    rpiCamStreamer.setHost(IP_RTP)
+    
     rpiCamStreamer.start() #запускаем трансляцию
 
     #поток обработки кадров    
