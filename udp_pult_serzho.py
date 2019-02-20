@@ -85,7 +85,10 @@ old_crc = None
 
 command = []
 direction = [0,0]
+automat = False 
 
+myFont = pygame.font.Font(None, 26)
+text = myFont.render('', True, [255,0,0])
 try:
     joy = pygame.joystick.Joystick(0) # создаем объект джойстик
     joy.init() # инициализируем джойстик
@@ -178,6 +181,7 @@ while running:
                         pass
                 
         elif event.type == pygame.JOYBUTTONDOWN:
+            #print(event)
             if event.button == 5:
                 SPEED += 10
                 print(SPEED)
@@ -189,13 +193,19 @@ while running:
             elif event.button == 8:
                 command.append("b")
                 running = False
-            
+            elif event.button == 3:
+                automat = not(automat)
+                if(automat):
+                    text = myFont.render('AUTOMAT ENABLED', True, [255,0,0])
+                else:
+                    text = myFont.render('', True, [255,0,0])
+        
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
         servo = int("su" in keys) - int("sd" in keys)
         
-        sendCommand((direction, SPEED, command, servo))
-
+        sendCommand((direction, SPEED, command, servo, automat))
+    screen.blit(text, [10, 10])
     pygame.display.update()         
     clock.tick(fraps) #задержка обеспечивающая 30 кадров в секунду
 

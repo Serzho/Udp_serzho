@@ -267,7 +267,7 @@ direction = [0, 0]
 command = []
 first_cicle = True
 old_data = []
-
+auto = False
 while running:  
     try:      
         cmd = [] #список всех команд, отправляемых роботу
@@ -278,14 +278,23 @@ while running:
             crc_new = crc16.crc16xmodem(cmd) #расчитываем контрольную сумму полученных данных
             if crc == crc_new: #сравниваем контрольные суммы и проверяем целостность данных
                 cmd = pickle.loads(cmd) #распаковываем список команд
-                direction, speed, command, servo = cmd
+                direction, speed, command, servo, automat = cmd
                 #print(direction, speed, command, servo)
                 if servo == 1:
                     ServoUp()
                 elif servo == -1:
                     ServoDown()
-        
-        SetSpeed(direction[0] * speed + (direction[1] * speed)//2, direction[0] * speed - (direction[1] * speed)//2)
+
+                if auto != automat:
+                    auto = automat
+                    if auto == False:
+                        print('Automat has been disabled...')
+                    else:
+                        print('Automat has been enabled...')
+        if(auto):
+            SetSpeed(-speed, -speed)
+        else:
+            SetSpeed(direction[0] * speed + (direction[1] * speed)//2, direction[0] * speed - (direction[1] * speed)//2)
     
         if "b" in command:
             robot.Beep()
