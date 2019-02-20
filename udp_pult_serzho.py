@@ -56,7 +56,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.159'
+IP_ROBOT = '192.168.8.161'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -69,7 +69,7 @@ running = True
 pygame.init() #инициализация Pygame
 pygame.mixer.quit()
 
-screen = pygame.display.set_mode([640, 360]) #создаем окно программы
+screen = pygame.display.set_mode([320, 240]) #создаем окно программы
 clock = pygame.time.Clock() #для осуществления задержки
 pygame.joystick.init() #инициализация библиотеки джойстика
 

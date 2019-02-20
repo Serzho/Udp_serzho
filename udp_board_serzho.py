@@ -162,7 +162,7 @@ def transmit():
 
 
     FORMAT = rpicam.VIDEO_MJPEG #поток MJPEG
-    WIDTH, HEIGHT = 640, 360
+    WIDTH, HEIGHT = 320, 240
     RESOLUTION = (WIDTH, HEIGHT)
     FRAMERATE = 30
 
