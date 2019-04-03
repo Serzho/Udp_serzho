@@ -7,29 +7,34 @@ class DetectLineThread(threading.Thread):
         super(DetectLineThread, self).__init__()
         self.daemon = True
         self._stopped = threading.Event()
-        self._frame = None
-        self._newFrameEvent = threading.Event()
+        self._frame = None #Кадр
+        self._newFrameEvent = threading.Event() 
+        self.debugFrame = None #Визуальный кадр
         
     def run(self):
         print('Frame handler started')
         while not self._stopped.is_set():
             self._newFrameEvent.wait() #Ждем получения нового кадра
             if not (self._frame is None): #Если получен кадр               
-                time.sleep(1) 
+                time.sleep(0.01)
                 #Обработка кадра
+                self.DebugFrame = cv2.GaussianBlur(self._frame, (5, 5), 2)
             self._newFrameEvent.clear() #Сбрасываем событие
         print('Frame handler stopped')
 
     def stop(self):
         self._stopped.set()
-        if not self._newFrameEvent.is_set():
+        if self.isReady:
             self._frame = None
             self._newFrameEvent.set()
         self.join() #Дождаться завершения потока
 
     def setFrame(self, frame):
-        if not self._newFrameEvent.is_set():
+        if self.isReady():
             self._frame = frame
             self._newFrameEvent.set()
             return True
         return False
+
+    def isReady(self): #Готов ли получать новый кадр
+        return not self._newFrameEvent.set()

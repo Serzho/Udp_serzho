@@ -21,6 +21,17 @@ import detectLineThread
 def onFrameCallback(data, width, height):
     frame = pygame.image.frombuffer(data, (width, height), 'RGB')
     screen.blit(frame, (0,0))
+    if automat and detectLineThread.isReady():    
+        rgbFrame = np.ndarray((height, width, 3), buffer = data, dtype = np.uint8)
+        #Переводим в ч/б
+        grayFrame = cv2.cvtColor(rgbFrame, cv2.COLOR_RGB2GRAY)
+        #Отдаем на обработку
+        if detectLineThread.debugFrame is not None:
+            detectLineThread.setFrame(grayFrame)
+            debugFrame = pygame.surfarray.make_surface(detectLineThread.debugFrame)
+            debugFrame = pygame.transform.scale(debugFrame, (100, 100))
+            screen.blit(debugFrame, (0, 0))
+        
     
 def sendCommand(data):
     global old_crc
@@ -59,7 +70,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.155'
+IP_ROBOT = '192.168.8.153'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -104,7 +115,7 @@ detectLineThread.start()
 
 while running:
     for event in pygame.event.get(): #пробегаемся в цикле по всем событиям Pygame
-        print(event)
+        #print(event)
         if 'b' in command:
             command.remove('b')
         if event.type == pygame.QUIT: #проверка на выход из окна
