@@ -14,24 +14,23 @@ sys.path.append('/home/user6/RPicam-Streamer')
 import time
 import receiver
 import threading
-import crc16
 
+import crc16
+import numpy as np
 import detectLineThread
+import cv2
 
 def onFrameCallback(data, width, height):
+    global frame
     frame = pygame.image.frombuffer(data, (width, height), 'RGB')
     screen.blit(frame, (0,0))
     if automat and detectLineThread.isReady():    
         rgbFrame = np.ndarray((height, width, 3), buffer = data, dtype = np.uint8)
-        #Переводим в ч/б
-        grayFrame = cv2.cvtColor(rgbFrame, cv2.COLOR_RGB2GRAY)
+        #Переводим в бгр
+        bgrFrame = cv2.cvtColor(rgbFrame, cv2.COLOR_RGB2BGR)
         #Отдаем на обработку
-        if detectLineThread.debugFrame is not None:
-            detectLineThread.setFrame(grayFrame)
-            debugFrame = pygame.surfarray.make_surface(detectLineThread.debugFrame)
-            debugFrame = pygame.transform.scale(debugFrame, (100, 100))
-            screen.blit(debugFrame, (0, 0))
-        
+        detectLineThread.setFrame(bgrFrame)
+            
     
 def sendCommand(data):
     global old_crc
@@ -70,7 +69,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.153'
+IP_ROBOT = '192.168.8.152'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -103,6 +102,10 @@ automat = False
 
 myFont = pygame.font.Font(None, 26)
 text = myFont.render('', True, [255,0,0])
+
+frame = None
+manualImage = None
+
 try:
     joy = pygame.joystick.Joystick(0) # создаем объект джойстик
     joy.init() # инициализируем джойстик
@@ -220,8 +223,22 @@ while running:
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
         servo = int("su" in keys) - int("sd" in keys)
-        
-        sendCommand((direction, SPEED, command, servo, automat))
+            
+    sendCommand((direction, SPEED, command, servo, automat))
+    if not frame is None:
+        screen.blit(frame, (0,0))
+
+    if automat and detectLineThread.debugFrame is not None:
+        print(detectLineThread.debugFrame is None)
+        bgrFrame = cv2.resize(detectLineThread.debugFrame, (100,100), interpolation = cv2.INTER_AREA)    
+        #Переводим в бгр
+        rgbFrame = cv2.cvtColor(bgrFrame, cv2.COLOR_RGB2BGR)
+        rbgFrame = np.rot90(rgbFrame)
+        rbgFrame = cv2.flip(rbgFrame,0)
+        debugFrame = pygame.surfarray.make_surface(rbgFrame)
+        debugFrame = pygame.transform.scale(debugFrame, (100,100))
+        screen.blit(debugFrame, (0,0))
+
     screen.blit(text, [10, 10])
     pygame.display.update()         
     clock.tick(fraps) #задержка обеспечивающая 30 кадров в секунду

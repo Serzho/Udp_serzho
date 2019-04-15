@@ -1,5 +1,6 @@
 import threading
 import cv2
+import time
 
 #поток для обработки кадров
 class DetectLineThread(threading.Thread):
@@ -18,7 +19,13 @@ class DetectLineThread(threading.Thread):
             if not (self._frame is None): #Если получен кадр               
                 time.sleep(0.01)
                 #Обработка кадра
-                self.DebugFrame = cv2.GaussianBlur(self._frame, (5, 5), 2)
+                self.debugFrame = cv2.GaussianBlur(self._frame, (5, 5), 2)
+                '''
+                if not self.debugFrame is None:
+                    print('OK!!!')
+                else:
+                    print('Ow(((')
+                '''
             self._newFrameEvent.clear() #Сбрасываем событие
         print('Frame handler stopped')
 
