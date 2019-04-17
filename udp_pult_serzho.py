@@ -39,7 +39,10 @@ def sendCommand(data):
     global PORT
     
     if not running:
-        data[2].append("e")
+        try:
+            data[2].append("e")
+        except:
+            print('Already stopped')
     data = pickle.dumps(data)#запаковываем данные
     crc = get_crc(data)#вычисляем контрольную сумму пакета
     msg = pickle.dumps((data, crc))#прикрепляем вычисленную контрольную сумму к пакету данных
@@ -69,7 +72,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.152'
+IP_ROBOT = '192.168.8.158'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -105,6 +108,9 @@ text = myFont.render('', True, [255,0,0])
 
 frame = None
 manualImage = None
+
+leftSpeed = 0
+rightSpeed = 0
 
 try:
     joy = pygame.joystick.Joystick(0) # создаем объект джойстик
@@ -219,25 +225,47 @@ while running:
                     text = myFont.render('AUTOMAT ENABLED', True, [255,0,0])
                 else:
                     text = myFont.render('', True, [255,0,0])
-        
+
+        elif event.type == pygame.JOYHATMOTION:
+            if event.value == (0,1):
+                SPEED += 10
+                print('speed: %d' % SPEED)
+            elif event.value == (0,-1):
+                SPEED -= 10
+                rint('speed: %d' % SPEED)
+            elif event.value == (1, 0):
+                detectLineThread.gain += 3
+                print('gain: %d' % detectLineThread.gain)
+            elif event.value == (-1, 0):
+                detectLineThread.gain -= 3
+                print('gain: %d' % detectLineThread.gain)
+                
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
         servo = int("su" in keys) - int("sd" in keys)
-            
-    sendCommand((direction, SPEED, command, servo, automat))
+    if automat:
+        leftSpeed = 0
+        rightSpeed = 0
+        if detectLineThread.debugFrame is not None:
+            print(detectLineThread.debugFrame is None)
+            bgrFrame = cv2.resize(detectLineThread.debugFrame, (100,100), interpolation = cv2.INTER_AREA)    
+            #Переводим в бгр
+            rgbFrame = cv2.cvtColor(bgrFrame, cv2.COLOR_RGB2BGR)
+            rbgFrame = np.rot90(rgbFrame)
+            rbgFrame = cv2.flip(rbgFrame,0)
+            debugFrame = pygame.surfarray.make_surface(rbgFrame)
+            debugFrame = pygame.transform.scale(debugFrame, (100,100))
+            screen.blit(debugFrame, (0,0))    
+    else:
+        leftSpeed = direction[0] * SPEED + (direction[1] * SPEED)//2
+        rightSpeed =  direction[0] * SPEED - (direction[1] * SPEED)//2
+        
+    sendCommand((leftSpeed, rightSpeed, command, servo, automat))
+
     if not frame is None:
         screen.blit(frame, (0,0))
 
-    if automat and detectLineThread.debugFrame is not None:
-        print(detectLineThread.debugFrame is None)
-        bgrFrame = cv2.resize(detectLineThread.debugFrame, (100,100), interpolation = cv2.INTER_AREA)    
-        #Переводим в бгр
-        rgbFrame = cv2.cvtColor(bgrFrame, cv2.COLOR_RGB2BGR)
-        rbgFrame = np.rot90(rgbFrame)
-        rbgFrame = cv2.flip(rbgFrame,0)
-        debugFrame = pygame.surfarray.make_surface(rbgFrame)
-        debugFrame = pygame.transform.scale(debugFrame, (100,100))
-        screen.blit(debugFrame, (0,0))
+    
 
     screen.blit(text, [10, 10])
     pygame.display.update()         
