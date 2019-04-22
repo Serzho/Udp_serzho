@@ -61,7 +61,9 @@ class DetectLineThread(threading.Thread):
         
         self.direction = 0 #направление движения
         self.lineFound = False
-
+    
+        width = self._frame.shape[1]
+        height = self._frame.shape[0]
         #преобразуем в градации серого
         gray = cv2.cvtColor(self._frame, cv2.COLOR_BGR2GRAY)
         
@@ -78,8 +80,27 @@ class DetectLineThread(threading.Thread):
                                         cv2.CHAIN_APPROX_SIMPLE)
 
         if len(contours) > 0:
+            
             mainContour = max(contours, key = cv2.contourArea)
-            #отрисовываем контур на исходной картинке
+
+            moments = cv2.moments(mainContour)
+            
+            dArea = moments['m00'] #Первый момент
+            sumX = moments['m10'] #Второй момент
+            sumY = moments['m01'] 
+
+            if dArea != 0: 
+                cx = int(sumX/dArea)     
+                cy = int(sumY/dArea)    
+
+                self.direction = cx/width*2 - 1 #Вычисляем направление
+                self.lineFound = True 
+
+                #Рисуем перекрестье
+                cv2.line(self._frame, (cx, 0), (cx, height), (255, 0, 0), 1)
+                cv2.line(self._frame, (0, cy), (width, cy), (255, 0, 0), 1)
+           
+            #Рисуем контур
             cv2.drawContours(self._frame, contours, -1,
                             (0, 255, 0), 3, cv2.FILLED) #отображаем контуры на изображении
         
