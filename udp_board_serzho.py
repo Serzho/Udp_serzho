@@ -299,6 +299,7 @@ while running:
                 if(auto):
                    
                     servoPos = 0
+                    robot.servo[0].SetPosition(servoPos)
                 else:
                     
                     if servo == 1:

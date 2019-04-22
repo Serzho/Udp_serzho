@@ -72,7 +72,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.158'
+IP_ROBOT = '192.168.8.103'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -232,7 +232,7 @@ while running:
                 print('speed: %d' % SPEED)
             elif event.value == (0,-1):
                 SPEED -= 10
-                rint('speed: %d' % SPEED)
+                print('speed: %d' % SPEED)
             elif event.value == (1, 0):
                 detectLineThread.gain += 3
                 print('gain: %d' % detectLineThread.gain)
@@ -243,11 +243,15 @@ while running:
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
         servo = int("su" in keys) - int("sd" in keys)
+
+    if not frame is None:
+        screen.blit(frame, (0,0))
+        
     if automat:
         leftSpeed = 0
         rightSpeed = 0
         if detectLineThread.debugFrame is not None:
-            print(detectLineThread.debugFrame is None)
+            #print(detectLineThread.debugFrame is None)
             bgrFrame = cv2.resize(detectLineThread.debugFrame, (100,100), interpolation = cv2.INTER_AREA)    
             #Переводим в бгр
             rgbFrame = cv2.cvtColor(bgrFrame, cv2.COLOR_RGB2BGR)
@@ -262,8 +266,7 @@ while running:
         
     sendCommand((leftSpeed, rightSpeed, command, servo, automat))
 
-    if not frame is None:
-        screen.blit(frame, (0,0))
+    
 
     
 

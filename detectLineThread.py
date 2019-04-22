@@ -78,7 +78,7 @@ class DetectLineThread(threading.Thread):
                                         cv2.CHAIN_APPROX_SIMPLE)
 
         if len(contours) > 0:
-            
+            mainContour = max(contours, key = cv2.contourArea)
             #отрисовываем контур на исходной картинке
             cv2.drawContours(self._frame, contours, -1,
                             (0, 255, 0), 3, cv2.FILLED) #отображаем контуры на изображении
