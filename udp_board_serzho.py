@@ -16,12 +16,12 @@ from PIL import ImageDraw
 import socket
 import os
 import pickle
-import sys
 import subprocess as sp
 
 import time
 import threading
 import crc16
+import sys
 
 sys.path.append('EduBot/EduBotLibrary')
 import edubot
@@ -256,11 +256,6 @@ disp.begin() #инициализируем дисплей
     
 disp.clear() #очищаем дисплей
 disp.display() #обновляем дисплей
-
-if sys.argv[1] == 1:  
-    #создаем и запускаем поток отображающий данные телеметрии да дисплее робота
-    stateThread = StateThread(robot, ina, disp)
-    stateThread.start()
 
 running = True
 direction = [0, 0]
