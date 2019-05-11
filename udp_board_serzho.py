@@ -133,7 +133,7 @@ def SetSpeed(leftSpeed, rightSpeed):
 
 def ServoUp():
     global servoPos
-    servoPos -= 10
+    servoPos -= 2
     if servoPos < 0:
         servoPos = 0
     robot.servo[0].SetPosition(servoPos)
@@ -142,7 +142,7 @@ def ServoUp():
 
 def ServoDown():
     global servoPos
-    servoPos += 10
+    servoPos += 2
     if servoPos > 125:
         servoPos = 125
     robot.servo[0].SetPosition(servoPos)
@@ -297,15 +297,15 @@ while running:
                 SetSpeed(leftSpeed, rightSpeed)
 
                 if(auto):
-                   
+                           
                     servoPos = 0
                     robot.servo[0].SetPosition(servoPos)
                 else:
-                    
                     if servo == 1:
                         ServoUp()
                     elif servo == -1:
                         ServoDown()
+                
                     
         
             

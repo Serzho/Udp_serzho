@@ -9,8 +9,8 @@ import os
 import socket
 import pickle
 
-#sys.path.append('/home/serzho/RPicam-Streamer-master/')
-sys.path.append('/home/user6/RPicam-Streamer')
+sys.path.append('/home/serzho/RPicam-Streamer/')
+#sys.path.append('/home/user6/RPicam-Streamer')
 import time
 import receiver
 import threading
@@ -72,7 +72,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.8.103'
+IP_ROBOT = '192.168.0.100'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -111,6 +111,7 @@ manualImage = None
 
 leftSpeed = 0
 rightSpeed = 0
+servo = 0
 
 try:
     joy = pygame.joystick.Joystick(0) # создаем объект джойстик
@@ -128,7 +129,7 @@ while running:
         if 'b' in command:
             command.remove('b')
         if event.type == pygame.QUIT: #проверка на выход из окна
-            running = False
+            running = False          
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                 keys.add("l")
@@ -161,18 +162,18 @@ while running:
         elif event.type == pygame.JOYAXISMOTION: #перемещение стиков
             if event.axis == 2:
                 if event.value > 0:
-                    keys.add("sd")
+                    keys.add("d")
                 else:
                     try:
-                        keys.remove("sd")
+                        keys.remove("d")
                     except:
                         pass
             elif event.axis == 5:
                 if event.value > 0:
-                    keys.add("su")
+                    keys.add("u")
                 else:
                     try:
-                        keys.remove("su")
+                        keys.remove("u")
                     except:
                         pass
                     
@@ -190,32 +191,25 @@ while running:
                         keys.remove("l")
                     except:
                         pass
-                    
-            elif event.axis == 1:
-                if event.value > 0.2:
-                    keys.add("d")
-                elif event.value < -0.2:
-                    keys.add("u")
-                elif abs(event.value) < 0.2:
-                    try:
-                        keys.remove("d")
-                    except:
-                        pass
-                    try:
-                        keys.remove("u")
-                    except:
-                        pass
-                
+
+            
+                        
         elif event.type == pygame.JOYBUTTONDOWN:
             #print(event)
-            if event.button == 5:
-                SPEED += 10
-                print(SPEED)
-            elif event.button == 4:
-                SPEED -= 10
-                print(SPEED)
-            elif event.button == 7:
+            if event.button == 7:
                 command.append("b")
+            elif event.button == 5:	                          
+                try:
+                    keys.remove("sd")
+                except:
+                    pass
+                keys.add('su')
+            elif event.button == 4:
+                try:
+                    keys.remove("su")
+                except:
+                    pass
+                keys.add('sd')
             elif event.button == 8:
                 command.append("b")
                 running = False
@@ -239,11 +233,15 @@ while running:
             elif event.value == (-1, 0):
                 detectLineThread.gain -= 3
                 print('gain: %d' % detectLineThread.gain)
-                
+
         direction[0] = int("d" in keys) - int("u" in keys)
         direction[1] = int("r" in keys) - int("l" in keys)
-        servo = int("su" in keys) - int("sd" in keys)
+        
+    
 
+    servo = int("su" in keys) - int("sd" in keys)
+    #print(keys)
+    
     if not frame is None:
         screen.blit(frame, (0,0))
         
@@ -263,13 +261,8 @@ while running:
     else:
         leftSpeed = direction[0] * SPEED + (direction[1] * SPEED)//2
         rightSpeed =  direction[0] * SPEED - (direction[1] * SPEED)//2
-        
+
     sendCommand((leftSpeed, rightSpeed, command, servo, automat))
-
-    
-
-    
-
     screen.blit(text, [10, 10])
     pygame.display.update()         
     clock.tick(fraps) #задержка обеспечивающая 30 кадров в секунду
