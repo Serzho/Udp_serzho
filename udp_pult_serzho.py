@@ -240,7 +240,17 @@ while running:
     
 
     servo = int("su" in keys) - int("sd" in keys)
+
+    try:
+        keys.remove('su')
+    except:
+        pass
+    try:
+        keys.remove('sd')
+    except:
+        pass
     #print(keys)
+    #print(servo)
     
     if not frame is None:
         screen.blit(frame, (0,0))
