@@ -13,7 +13,7 @@ class DetectLineThread(threading.Thread):
         self._frame = None #кадр для обработки
         self._newFrameEvent = threading.Event() #событие для контроля поступления кадров
         self.debugFrame = None #визуальный результат работы алгоритма
-        self.gain = 128 #чувствительность детектора
+        self.gain = 50 #чувствительность детектора
         self.direction = 0 #направление движения -1..0..1
         self.lineFound = False #есть ли линия на кадре
         

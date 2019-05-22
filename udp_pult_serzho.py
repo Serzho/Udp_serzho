@@ -9,8 +9,8 @@ import os
 import socket
 import pickle
 
-sys.path.append('/home/serzho/RPicam-Streamer/')
-#sys.path.append('/home/user6/RPicam-Streamer')
+#sys.path.append('/home/serzho/RPicam-Streamer/')
+sys.path.append('/home/user6/RPicam-Streamer')
 import time
 import receiver
 import threading
@@ -24,9 +24,10 @@ def onFrameCallback(data, width, height):
     global frame
     frame = pygame.image.frombuffer(data, (width, height), 'RGB')
     screen.blit(frame, (0,0))
-    if automat and detectLineThread.isReady():    
+    if automat and detectLineThread.isReady():
         rgbFrame = np.ndarray((height, width, 3), buffer = data, dtype = np.uint8)
         #Переводим в бгр
+        rgbFrame = rgbFrame[100:, 50:-50]
         bgrFrame = cv2.cvtColor(rgbFrame, cv2.COLOR_RGB2BGR)
         #Отдаем на обработку
         detectLineThread.setFrame(bgrFrame)
@@ -72,7 +73,7 @@ keys = set()
 
 SPEED = 350
 ROTATE_K = 0.8
-IP_ROBOT = '192.168.0.100'
+IP_ROBOT = '192.168.8.100'
 SELF_IP = str(os.popen('hostname -I | cut -d\' \' -f1').readline().replace('\n',''))
 
 PORT = 8000
@@ -121,6 +122,7 @@ except pygame.error:
     print('no joystick found.')
 
 detectLineThread = detectLineThread.DetectLineThread()
+detectLineThread.gain = 60
 detectLineThread.start()
 
 while running:
@@ -256,8 +258,12 @@ while running:
         screen.blit(frame, (0,0))
         
     if automat:
-        leftSpeed = 0
-        rightSpeed = 0
+        if detectLineThread.detectLine:
+            leftSpeed = SPEED//3 - int(detectLineThread.direction * 50)
+            rightSpeed = SPEED//3 + int(detectLineThread.direction * 50)
+        else:
+            leftSpeed = 0
+            rightSpeed = 0
         if detectLineThread.debugFrame is not None:
             #print(detectLineThread.debugFrame is None)
             bgrFrame = cv2.resize(detectLineThread.debugFrame, (100,100), interpolation = cv2.INTER_AREA)    
